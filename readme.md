@@ -45,7 +45,7 @@ covers major security vendors:
 - **bitdefender** (bdagent.exe, vsserv.exe, bdservicehost.exe)
 - **malwarebytes** (mbamservice.exe, mbamtray.exe)
 - **analysis tools** (processhacker.exe, procexp.exe, wireshark.exe)
-- **and more
+- **and more**
 
 ## usage
 
