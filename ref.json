@@ -1,0 +1,278 @@
+{
+"basic": {
+    "path": "dataset/BdApiUtil64.sys",
+    "DeviceName": [
+        "\\\\.\\X:",
+        "\\\\.\\%ws:X"
+    ],
+    "time": {
+        "ioctl handler": 2,
+        "hunting vulns": 55
+    },
+    "memory": {
+        "ioctl handler": 39552,
+        "hunting vulns": 638272
+    },
+    "unique addr": {
+        "ioctl handler": 301,
+        "hunting vulns": 1251
+    },
+    "ioctl handler": "0x28630",
+    "IoControlCodes": [
+        "0x800024b4",
+        "0x8000232c",
+        "0x80002330",
+        "0x80002324",
+        "0x8000264c",
+        "0x80002648",
+        "0x800021a0",
+        "0x80002194",
+        "0x80002198",
+        "0x8000219c",
+        "0x80002190",
+        "0x80002000",
+        "0x8000200c",
+        "0x80002008"
+    ]
+},
+"vuln": [
+    {
+        "title": "controllable process handle",
+        "description": "ObOpenObjectByPointer - Object controllable",
+        "state": "<SimState @ 0x1001a8>",
+        "eval": {
+            "IoControlCode": "0x800024b4",
+            "SystemBuffer": "0x44570000",
+            "Type3InputBuffer": "0x0",
+            "UserBuffer": "0x0",
+            "InputBufferLength": "0x4",
+            "OutputBufferLength": "0x0"
+        },
+        "parameters": {
+            "Object": "<BV64 PsLookupProcessByProcessId_0x152e9_38_64>",
+            "Handle": "<BV64 0x7fffffffffeffa0>"
+        },
+        "others": {
+            "return address": "0x1531f"
+        }
+    },
+    {
+        "title": "arbitrary process termination",
+        "description": "ZwTerminateProcess - handle controllable",
+        "state": "<SimState @ 0x100198>",
+        "eval": {
+            "IoControlCode": "0x800024b4",
+            "SystemBuffer": "0x44570000",
+            "Type3InputBuffer": "0x0",
+            "UserBuffer": "0x0",
+            "InputBufferLength": "0x4",
+            "OutputBufferLength": "0x0"
+        },
+        "parameters": {
+            "ProcessHandle": "<BV64 ObReferenceObjectByHandle_0x1531f_39_64>"
+        },
+        "others": {
+            "return address": "0x15332"
+        }
+    },
+    {
+        "title": "null pointer dereference - allocated memory",
+        "description": "read allocated memory",
+        "state": "<SimState @ 0x100150>",
+        "eval": {
+            "IoControlCode": "0x80002324",
+            "SystemBuffer": "0x44590000",
+            "Type3InputBuffer": "0x0",
+            "UserBuffer": "0x0",
+            "InputBufferLength": "0x224",
+            "OutputBufferLength": "0x0"
+        },
+        "parameters": {},
+        "others": {
+            "read from": "<BV64 ExAllocatePoolWithTag_0x14938_69_64>"
+        }
+    },
+    {
+        "title": "null pointer dereference - allocated memory",
+        "description": "write allocated memory",
+        "state": "<SimState @ 0x15e00>",
+        "eval": {
+            "IoControlCode": "0x80002324",
+            "SystemBuffer": "0x44590000",
+            "Type3InputBuffer": "0x0",
+            "UserBuffer": "0x0",
+            "InputBufferLength": "0x224",
+            "OutputBufferLength": "0x0"
+        },
+        "parameters": {},
+        "others": {
+            "write to": "<BV64 ExAllocatePoolWithTag_0x14146_87_64>"
+        }
+    },
+    {
+        "title": "ObjectName in ObjectAttributes controllable",
+        "description": "IoCreateFile",
+        "state": "<SimState @ 0x100118>",
+        "eval": {
+            "IoControlCode": "0x8000264c",
+            "SystemBuffer": "0x44610000",
+            "Type3InputBuffer": "0x0",
+            "UserBuffer": "0x0",
+            "InputBufferLength": "0x208",
+            "OutputBufferLength": "0x0"
+        },
+        "parameters": {
+            "ObjectAttributes": {
+                "ObjectName": "<BV64 0x7fffffffffefee0>",
+                "ObjectName.Buffer": "<BV1024 Reverse(RtlInitUnicodeString_0x138e6_374_80 .. 0x0 .. mem_4462000c_375_928{UNINITIALIZED})>",
+                "Attributes": "<BV32 0x240>"
+            }
+        },
+        "others": {
+            "return address": "0x1397f"
+        }
+    },
+    {
+        "title": "ObjectName in ObjectAttributes controllable",
+        "description": "IoCreateFile",
+        "state": "<SimState @ 0x100118>",
+        "eval": {
+            "IoControlCode": "0x80002648",
+            "SystemBuffer": "0x44630000",
+            "Type3InputBuffer": "0x0",
+            "UserBuffer": "0x0",
+            "InputBufferLength": "0x208",
+            "OutputBufferLength": "0x0"
+        },
+        "parameters": {
+            "ObjectAttributes": {
+                "ObjectName": "<BV64 0x7fffffffffefee0>",
+                "ObjectName.Buffer": "<BV1024 Reverse(RtlInitUnicodeString_0x13c46_383_80 .. 0x0 .. mem_4464000c_384_928{UNINITIALIZED})>",
+                "Attributes": "<BV32 0x240>"
+            }
+        },
+        "others": {
+            "return address": "0x13ce3"
+        }
+    },
+    {
+        "title": "read/write controllable address",
+        "description": "read",
+        "state": "<SimState @ 0x12ef0>",
+        "eval": {
+            "IoControlCode": "0x800021a0",
+            "SystemBuffer": "0x44650000",
+            "Type3InputBuffer": "0x0",
+            "UserBuffer": "0x0",
+            "InputBufferLength": "0x10",
+            "OutputBufferLength": "0x0"
+        },
+        "parameters": {},
+        "others": {
+            "read from": "<BV64 *<BV64 SystemBuffer_27_64>_389_4096[127:64] + 0x4>"
+        }
+    },
+    {
+        "title": "read/write controllable address",
+        "description": "read",
+        "state": "<SimState @ 0x12c83>",
+        "eval": {
+            "IoControlCode": "0x80002194",
+            "SystemBuffer": "0x44670000",
+            "Type3InputBuffer": "0x0",
+            "UserBuffer": "0x0",
+            "InputBufferLength": "0x10",
+            "OutputBufferLength": "0x0"
+        },
+        "parameters": {},
+        "others": {
+            "read from": "<BV64 *<BV64 SystemBuffer_27_64>_395_4096[127:64] + 0x8>"
+        }
+    },
+    {
+        "title": "read/write controllable address",
+        "description": "read",
+        "state": "<SimState @ 0x12c8f>",
+        "eval": {
+            "IoControlCode": "0x80002194",
+            "SystemBuffer": "0x44670000",
+            "Type3InputBuffer": "0x0",
+            "UserBuffer": "0x0",
+            "InputBufferLength": "0x10",
+            "OutputBufferLength": "0x0"
+        },
+        "parameters": {},
+        "others": {
+            "read from": "<BV64 0x0 .. *<BV64 *<BV64 SystemBuffer_27_64>_395_4096[127:64]>_396_4096[95:64]>"
+        }
+    },
+    {
+        "title": "read/write controllable address",
+        "description": "read",
+        "state": "<SimState @ 0x12f6f>",
+        "eval": {
+            "IoControlCode": "0x80002198",
+            "SystemBuffer": "0x44690000",
+            "Type3InputBuffer": "0x0",
+            "UserBuffer": "0x0",
+            "InputBufferLength": "0x28",
+            "OutputBufferLength": "0x0"
+        },
+        "parameters": {},
+        "others": {
+            "read from": "<BV64 *<BV64 SystemBuffer_27_64>_405_4096[127:64] + 0x4>"
+        }
+    },
+    {
+        "title": "read/write controllable address",
+        "description": "read",
+        "state": "<SimState @ 0x12dc5>",
+        "eval": {
+            "IoControlCode": "0x80002190",
+            "SystemBuffer": "0x446c0000",
+            "Type3InputBuffer": "0x0",
+            "UserBuffer": "0x0",
+            "InputBufferLength": "0x28",
+            "OutputBufferLength": "0x0"
+        },
+        "parameters": {},
+        "others": {
+            "read from": "<BV64 *<BV64 SystemBuffer_27_64>_419_4096[127:64] + 0x8>"
+        }
+    },
+    {
+        "title": "read/write controllable address",
+        "description": "read",
+        "state": "<SimState @ 0x12dcd>",
+        "eval": {
+            "IoControlCode": "0x80002190",
+            "SystemBuffer": "0x446c0000",
+            "Type3InputBuffer": "0x0",
+            "UserBuffer": "0x0",
+            "InputBufferLength": "0x28",
+            "OutputBufferLength": "0x0"
+        },
+        "parameters": {},
+        "others": {
+            "read from": "<BV64 0x0 .. *<BV64 *<BV64 SystemBuffer_27_64>_419_4096[127:64]>_420_4096[95:64]>"
+        }
+    },
+    {
+        "title": "read/write controllable address",
+        "description": "read",
+        "state": "<SimState @ 0x12da0>",
+        "eval": {
+            "IoControlCode": "0x80002190",
+            "SystemBuffer": "0x446c0000",
+            "Type3InputBuffer": "0x0",
+            "UserBuffer": "0x0",
+            "InputBufferLength": "0x28",
+            "OutputBufferLength": "0x0"
+        },
+        "parameters": {},
+        "others": {
+            "read from": "<BV64 *<BV64 SystemBuffer_27_64>_419_4096[255:192] + 0x4>"
+        }
+    }
+]
+}
