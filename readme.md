@@ -12,7 +12,7 @@ this tool exploits vulnerabilities in the bitdefender api utility driver (bdapiu
 - installs the driver as a windows service
 - continuously scans for security software processes
 - terminates detected processes using kernel-level ioctl calls
-- targets over 540 security products including edr, antivirus, and monitoring tools
+- targets 441 security products including edr, antivirus, and monitoring tools
 
 ## how it works
 
