@@ -1,6 +1,9 @@
 # dead-av 
 a golang implementation of bring-your-own-vulnerable-driver (byovd) attack using the bdapiutil64.sys driver to terminate security software processes. this is a rewrite and expansion of the original implementation from [blacksnufkin/byovd/bdapiutil-killer](https://github.com/BlackSnufkin/BYOVD/tree/main/BdApiUtil-Killer).
 
+## demo 
+<img width="579" height="763" alt="image" src="https://github.com/user-attachments/assets/87fdaf3f-5768-45b4-a316-5770621d8094" />
+
 ## what it does
 
 this tool exploits vulnerabilities in the bitdefender api utility driver (bdapiutil64.sys) to gain kernel-level process termination capabilities. it automatically:
